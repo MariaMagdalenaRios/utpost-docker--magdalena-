@@ -1,0 +1,51 @@
+# Utpost – CI (M1)
+# Varje PR mot main och varje push till main: lint, formatkontroll, typkontroll, tester och bygge.
+# Rött någonstans = PR:en får inte mergas (branch protection kräver "Kvalitet" och "Bygg").
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Minsta möjliga rättigheter för GITHUB_TOKEN – pipelinen behöver bara läsa repot.
+permissions:
+  contents: read
+
+# Ny push till samma PR avbryter den pågående körningen – sparar minuter i kön.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Kvalitet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm            # cachar ~/.npm nycklat på package-lock.json
+      - run: npm ci             # installerar ALLA workspaces (api, web, client) – exakt enligt lockfilen
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck   # M2: vue-tsc i client/ och tsc i api/ – kontraktet kontrolleras innan testerna körs
+      - run: npm test
+
+  build:
+    name: Bygg
+    runs-on: ubuntu-latest     # körs parallellt med quality – de behöver inte varandra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist
+          retention-days: 7

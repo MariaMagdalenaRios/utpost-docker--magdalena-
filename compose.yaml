@@ -51,14 +51,14 @@ services:
       mongo:
         condition: service_healthy
 
-        client:
-  build:
-    context: .
-    dockerfile: client/Dockerfile
-  ports:
-    - "3001:3001"
-  depends_on:
-    - api
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
 
 volumes:
   pgdata:

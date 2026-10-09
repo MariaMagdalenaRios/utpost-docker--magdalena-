@@ -3,7 +3,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY shared/package.json shared/
-COPY api/package.json client/
+COPY client/package.json client/
 RUN npm ci --workspace=client
 
 COPY shared/ shared/

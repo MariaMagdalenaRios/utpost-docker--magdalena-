@@ -3,12 +3,14 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY shared/package.json shared/
-COPY api/package.json api/
-RUN npm ci --workspace=api --omit=dev
+COPY api/package.json client/
+RUN npm ci --workspace=client
 
 COPY shared/ shared/
-COPY api/ api/
+COPY client/ client/
+RUN npm run build --workspace=client
 
-WORKDIR /app/api
-EXPOSE 4000
-CMD ["node", "src/index.js"]
+
+WORKDIR /app/client
+EXPOSE 3001
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3001"]

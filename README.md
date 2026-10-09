@@ -1,34 +1,48 @@
 # Utpost
 
-Plattform för friluftsdestinationer. Redaktionella guider, användarnas egna turer och bilder.
+A platform for outdoor destinations. Editorial guides, users' own tours, and photos.
 
-## Kom igång
+## Getting started
+
+Requires Node 22.18+ and Docker Desktop. Two ways to run it, from the repo root.
+
+**All of Utpost in Docker** (Postgres, MongoDB, API, and client):
 
 ```bash
-npm install
-docker compose -f docker-compose.dev.yml up -d
-npm run seed
-npm start
+docker compose up --build -d
+docker compose exec api npm run seed
 ```
 
-Appen ligger sen på http://localhost:3000 och API:et på http://localhost:4000.
+The client is then at http://localhost:3001 and the API at http://localhost:4000.
 
-## Struktur
+**Databases only in Docker**, the app on your computer:
 
-- `api/` – Express + Postgres (Drizzle). Kräver **Node 22.18+** (routes skrivs i TypeScript och körs direkt av Node, utan byggsteg)
+```bash
+docker compose up -d postgres mongo
+npm install
+npm run seed
+npm run dev:api
+npm run dev:client
+```
+
+The API on your computer uses `localhost:5433` and `localhost:27017`, the ports Compose publishes. The client is at http://localhost:3001 and the API at http://localhost:4000.
+
+## Structure
+
+- `api/` – Express + Postgres (Drizzle). Requires **Node 22.18+** (routes are written in TypeScript and run directly by Node, with no build step)
 - `web/` – React + Vite
-- `shared/` – **API-kontraktet som TypeScript-typer** (`@utpost/shared`). Används av både `api/` och `client/`. Ändras ett svar ändras typen, i samma PR.
-- `client/` – **ny klient i Vue 3 + Vue Router** (port 3001), under migrering till TypeScript: `api.ts`, `GuideCard`, `GuidesView` och `GuideDetailView` är TS, `ToursView` och `TourDetailView` är fortfarande JS (`allowJs`). Lint, formatkontroll, typkontroll, tester och bygge körs av pipelinen på varje PR.
+- `shared/` – **the API contract as TypeScript types** (`@utpost/shared`). Used by both `api/` and `client/`. When a response changes, the type changes in the same PR.
+- `client/` – **new Vue 3 + Vue Router client** (port 3001), migrating to TypeScript: `api.ts`, `GuideCard`, `GuidesView`, and `GuideDetailView` are TS; `ToursView` and `TourDetailView` are still JS (`allowJs`). Lint, format check, typecheck, tests, and build run in the pipeline on every PR.
 
-## Kommandon (kör från roten)
+## Commands (run from the root)
 
-    npm run dev:client        # Vue-klienten på :3001 (API:et måste köra: npm run dev:api)
-    npm run lint              # ESLint på client/
-    npm run format:check      # Prettier – bara kontroll, ändrar inget
-    npm run typecheck         # vue-tsc i client/ + tsc i api/ – ingen kompilering, bara kontroll
-    npm test                  # Vitest, en gång, avslutar
-    npm run build             # vite build av client/
+    npm run dev:client        # Vue client on :3001 (the API must be running: npm run dev:api)
+    npm run lint              # ESLint on client/
+    npm run format:check      # Prettier – check only, changes nothing
+    npm run typecheck         # vue-tsc in client/ + tsc in api/ – no compile, check only
+    npm test                  # Vitest, once, then exits
+    npm run build             # vite build of client/
 
 ## Deploy
 
-Fråga Marcus.
+Ask Marcus.
